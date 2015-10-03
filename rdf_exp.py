@@ -122,6 +122,8 @@ if __name__=="__main__":
     parser.add_argument("image_file")
     parser.add_argument("centroid_file")
     parser.add_argument("dr")
+    parser.add_argument("-s","--shift",help="Shifts centroids to account for 
+                                                removal of edge particles."
     args=parser.parse_args()
 
     if not os.path.exists("outputs"):
@@ -135,12 +137,21 @@ if __name__=="__main__":
     y = centroids['y']
     spacing_pixels = centroids['spacing']
 
+    if args.shift:
+        shift = int(ceil(spacing/2.0))
+        x = x-shift
+        y = y-shift
+
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
     fov_nm = metadata['fov']
     fov_units = metadata['fov_units']
     fov_pixels = metadata['pixels']
     pixels_per_nm = float(fov_pixels)/float(fov_nm)
+
+    if args.shift:
+        fov_pixels = fov_pixels - 2*shift
+        fov_nm = fov_pixels / pixels_per_nm
 
     # Perform rdf calculations
     print "Done. Calculating experimental RDF."
