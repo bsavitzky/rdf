@@ -39,8 +39,7 @@ input:  image file, as a tiff
 output: none
 
 
-###### TODO: write this script ######
-Script 3: edit_centroids.py
+Script 3: edit_centroids.ipynb
 Description: Displays image with centers overlaid.  Allows erroneous
 centers to be removed, and missed centers to be added manually. Be sure to
 refine centers after with centroids_SP.
@@ -57,31 +56,43 @@ Input:  image file, as tiff
 output: centers file, as .npz
 
 
-Script 5: rdf.py
-Description: Generates the RDF for the data given.  Finds the best fit
-ideal paracrystalline and projection paracrystalline RDF (i.e. determines
-the values of sigma and mu)
+Script 5: rdf_exp.py
+Description: Generates the RDF for the data given, using centroids.
 Note that rdf.py does not save plots of g(r) - these must be calculated 
 separately from plot_rdf.py
-Usage:      python rdf.py image_file.tif centroid_file.npz rMax dr 
+Usage:      python rdf.py image_file.tif centroid_file.npz dr 
 Input:  -.tif image file
         -.npz file with particle centers
-        -rmax, maximum distance to calculate g(r) to, in particle diameters
         -dr, step size in g(r) calculation, in particle diameters
-Output: .npz files of...
-        -Radii, in nm, corresponding to all 3 g(r)s
+Output: .npz files with:
+        -Radii, in nm
         -Experimental RDF
-        -ideal paracrystalline RDF fit
-        -projection RDF fit
-        -sigma, mu, and c used
+        Grab data via:
+            data = np.load('rdf_exp.npz')
+            r_nm, g_exp = data['r_nm'],data['g_exp']
 
 
-Script 6: plot_rdf.py
+Script 6: rdf_models.pt
+Desciption: Calculates best fit paracrystalline and projection paracrystalline
+rdfs based on g_exp
+Usage:      python rdf_models.py exp_rdf_file.npz
+Input:  -.npz file with r and g_exp
+Output: -Radii, in nm
+        -Experimental RDF
+        -Ideal paracrystalline RDF
+        -Projection RDF
+        -best fit sigma, mu, and c
+        Grab data via:
+            data = np.load('rdf_exp.npz')
+            r_nm, g_exp, g_ideal, g_proj, sigma_nm, mu_nm, c = data['r_nm'],data['g_exp'],...etc
+
+
+Script 7: plot_rdf.py
 Description: Makes plots of various rdfs (experimental, ideal, projection)
 Input:  -.npz file with g(r) (exper, ideal, proj)
 
 
-Script 7: corr_len.py
+Script 8: corr_len.py
 Description: Finds the correlation length for an experimental RDF
 Input: .npz file with RDF
 Output: -.npz file with correlation length and envelope curve used in fit
