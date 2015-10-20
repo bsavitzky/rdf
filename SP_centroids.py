@@ -144,7 +144,7 @@ shift = spacing/2.0
 unfit_particles = 0
 edge_particles = 0
 for i in range(len(x)):
-    print "Fitting particle {}".format(i)
+    print "Fitting particle {} of {}".format(i, len(x))
     xcurr,ycurr = x[i],y[i]
     if not on_edge(xcurr,ycurr,shift,image):
         xSPcurr,ySPcurr, fit = xySP(xcurr,ycurr,spacing,image,plot=False)

@@ -15,7 +15,7 @@ input is required.  See below.
 
 
 Script 1: centroids.py
-Description: Finds all of the QDs in an image and identifies their centroidswith subpixel resolution.
+Description: Finds all of the QDs in an image and identifies their centroidswith subpixel resolution.  Determines SL spacing in the process.
 Usage:  python centroids.py filename.tif threshold
         May need to manually set minDist at line 475 if spacing is not
         extracted correctly
@@ -105,5 +105,13 @@ Description: Finds the correlation length for an experimental RDF
 Input: .npz file with RDF
 Output: -.npz file with correlation length and envelope curve used in fit
         -.pdf with RDF and envelope fit to find correlation length
+
+
+############
+
+
+The 'sample_files/' directory contains one sample file, and two small bash
+scripts which import variables and run .py files to strealine workflow
+using this package.  These should be edited for each dataset as necessary.
 
 
