@@ -119,7 +119,11 @@ def xySP(x0, y0, spacing, image, plot=False):
             if (x0_smallIm - i)**2 + (y0_smallIm - j)**2 > (spacing/2.0)**2:
                 smallImage[i,j] = baseline
     # Perform fit and pull out centers
-    popt, pcov = opt.curve_fit(gauss2d, (xs,ys), smallImage.ravel(), p0=initial_guess)
+    try:
+        popt, pcov = opt.curve_fit(gauss2d, (xs,ys), smallImage.ravel(), p0=initial_guess)
+    except RuntimeError:
+        print "Particle could not be fit to a 2D gaussian.  Returning original centroid."
+        return x0, y0, 1
     x_SP, y_SP = popt[2]+xshift, popt[1]+yshift
     # Plotting for troubleshooting
     if plot:
@@ -128,7 +132,7 @@ def xySP(x0, y0, spacing, image, plot=False):
         ax.imshow(smallImage)
         ax.contour(xs,ys,data_fitted.reshape(np.shape(smallImage)[0],np.shape(smallImage)[1]),8,colors='w')
         plt.show()
-    return x_SP, y_SP
+    return x_SP, y_SP, 0
 
 
 # Iterate over all particles
@@ -137,20 +141,31 @@ time_init = time.time()
 x_SP=[]
 y_SP=[]
 shift = spacing/2.0
+unfit_particles = 0
+edge_particles = 0
 for i in range(len(x)):
     print "Fitting particle {}".format(i)
     xcurr,ycurr = x[i],y[i]
     if not on_edge(xcurr,ycurr,shift,image):
-        xSPcurr,ySPcurr = xySP(xcurr,ycurr,spacing,image,plot=False)
+        xSPcurr,ySPcurr, fit = xySP(xcurr,ycurr,spacing,image,plot=False)
         # Fitting may have shifted particle into edge region, so check again...
         if not on_edge(xSPcurr,ySPcurr,shift,image):
             x_SP.append(xSPcurr)
             y_SP.append(ySPcurr)
+            unfit_particles += fit
+        else:
+            edge_particles += 1
+    else:
+        edge_particles += 1
 time_tot = time.time() - time_init
 # Shift centers
 fov_pixels = fov_pixels - 2*shift
 x_SP, y_SP = np.array(x_SP) - shift, np.array(y_SP) - shift
-print "Done.  Process took {} seconds.  Shifting centers and FOV, and saving in {}.npz".format(repr(int(time_tot)),output_name)
+print "Done.\n{} total particles.".format(len(x))
+print "{} edge particles were discarded.".format(edge_particles)
+print "{} particles could not be fit and original pixel-accuracy centroid was used.".format(unfit_particles)
+print "Process took {} seconds.".format(repr(int(time_tot)))
+print "Shifting centers and FOV, and saving in {}.npz".format(output_name)
 np.savez(output_name, x=x_SP, y=y_SP, spacing=spacing, fov_pixels=fov_pixels)
 
 

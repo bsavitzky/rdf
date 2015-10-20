@@ -52,8 +52,9 @@ output: centers file, as .npz
 
 
 Script 4: SP_centroids.py
-Description: Refines a set of centroids with subpixel resolution. Also
-throws out any particles on images egde, then shifts the positions and FOV
+Description: Refines a set of centroids with subpixel resolution. Returns
+pixelated centroid for any particles which cannot be fit to a gaussian.  
+Throws out any particles on images egde, then shifts the positions and FOV 
 accordingly in the output .npz file.
 Usage:      python SP_centroids.py image_file.tif centroid_file.npz
 Input:  image file, as tiff
