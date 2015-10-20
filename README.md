@@ -49,8 +49,10 @@ output: centers file, as .npz
 
 
 Script 4: SP_centroids.py
-Description: Refines a set of centroids with subpixel resolution.
-Usage:      python view_centroids.py image_file.tif centroid_file.npz
+Description: Refines a set of centroids with subpixel resolution. Also
+throws out any particles on images egde, then shifts the positions and FOV
+accordingly in the output .npz file.
+Usage:      python SP_centroids.py image_file.tif centroid_file.npz
 Input:  image file, as tiff
         centers file, as .npz
 output: centers file, as .npz
@@ -59,7 +61,9 @@ output: centers file, as .npz
 Script 5: rdf_exp.py
 Description: Generates the RDF for the data given, using centroids.
 Note that rdf.py does not save plots of g(r) - these must be calculated 
-separately from plot_rdf.py
+separately from plot_rdf.py.  Also note that 'fov_pixels' should be read
+directly from the centroids file, as it will have been shifted while 
+eliminating edger particles - do NOT use 'fov_pixels' from mdscape.py!
 Usage:      python rdf.py image_file.tif centroid_file.npz dr 
 Input:  -.tif image file
         -.npz file with particle centers
@@ -72,7 +76,7 @@ Output: .npz files with:
             r_nm, g_exp = data['r_nm'],data['g_exp']
 
 
-Script 6: rdf_models.pt
+Script 6: rdf_models.py
 Desciption: Calculates best fit paracrystalline and projection paracrystalline
 rdfs based on g_exp
 Usage:      python rdf_models.py exp_rdf_file.npz

@@ -19,10 +19,11 @@ import argparse
 import skimage.io
 import scipy.optimize as opt
 
-from math import ceil
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 
+# Import local libraries
+import mdscrape as md
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -30,12 +31,10 @@ parser.add_argument("image_file")
 parser.add_argument("centroid_file")
 args = parser.parse_args()
 
-
 # Handle IO
 if not os.path.exists("outputs"):
     os.mkdir("outputs")
 output_name="outputs/"+"SP_centroids"
-
 
 # Get image, centroids, pixels
 print "Loading image and centers and generating overlay."
@@ -45,15 +44,17 @@ x = centroids['x']
 y = centroids['y']
 spacing = float(centroids['spacing'])
 
+# Get metadata
+metadata = md.extract_metadata(args.image_file)
+fov_pixels = metadata['pixels']
 
 # Check if a particle is on the edge of the image (within 1/2 SL spacing)
-def on_edge(x0,y0,size,image):
+def on_edge(x0,y0,rad,image):
     xpixels = np.shape(image)[0]
     ypixels = np.shape(image)[1]
-    rad = int(ceil(size/2.0))
     xmin, xmax = x0-rad, x0+rad
     ymin, ymax = y0-rad, y0+rad
-    if (xmin < 0) or (xmax > xpixels) or (ymin < 0) or (ymax > ypixels):
+    if (xmin <= 0) or (xmax >= xpixels) or (ymin <= 0) or (ymax >= ypixels):
         return True
     else:
         return False
@@ -68,7 +69,7 @@ def filter_dot(x0,y0,size,image):
             xshift, yshift - shifts relative to original image
     """
     x0, y0 = int(x0), int(y0)
-    rad = int(ceil(size/2.0))
+    rad = int(np.ceil(size/2.0))
     xpixels = np.shape(image)[0]
     ypixels = np.shape(image)[1]
     # Determine window max and min and make window array
@@ -135,16 +136,22 @@ print "Performing 2D gaussian fit to all peaks..."
 time_init = time.time()
 x_SP=[]
 y_SP=[]
+shift = spacing/2.0
 for i in range(len(x)):
     print "Fitting particle {}".format(i)
     xcurr,ycurr = x[i],y[i]
-    if not on_edge(xcurr,ycurr,spacing,image):
+    if not on_edge(xcurr,ycurr,shift,image):
         xSPcurr,ySPcurr = xySP(xcurr,ycurr,spacing,image,plot=False)
-        x_SP.append(xSPcurr)
-        y_SP.append(ySPcurr)
+        # Fitting may have shifted particle into edge region, so check again...
+        if not on_edge(xSPcurr,ySPcurr,shift,image):
+            x_SP.append(xSPcurr)
+            y_SP.append(ySPcurr)
 time_tot = time.time() - time_init
-print "Done.  Process took {} seconds.\nSaving as {}.npz".format(repr(int(time_tot)),output_name)
-np.savez(output_name, x=x_SP, y=y_SP, spacing=spacing)
+# Shift centers
+fov_pixels = fov_pixels - 2*shift
+x_SP, y_SP = np.array(x_SP) - shift, np.array(y_SP) - shift
+print "Done.  Process took {} seconds.  Shifting centers and FOV, and saving in {}.npz".format(repr(int(time_tot)),output_name)
+np.savez(output_name, x=x_SP, y=y_SP, spacing=spacing, fov_pixels=fov_pixels)
 
 
 

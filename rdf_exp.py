@@ -6,15 +6,15 @@ particles can be used.
 # Import global libraries
 import numpy as np
 
-
 # Calculate the excess area that must be subtracted off an annulus with inner radius r and
 # outer radius R with a center x from the box edge, where x<r.
 def calc_excess(r, R, x):
     # Should be one line of code, but np.where appears to be written poorly
     # Mask and alternate r/R arrays prevent acrcos and sqrt from throwing errors
-    mask = x<r
+    mask = (x<r)
     r_mask = np.where(mask, r, x+1)   # (x+1) is a dummy, never appears in final output
     R_mask = np.where(mask, R, x+1)   #   but ensures arccos and sqrt won't break
+#    print r_mask.min(),R_mask.min()
     return np.where(mask, R_mask**2*np.arccos(x/R_mask) - r_mask**2*np.arccos(x/r_mask)
                         - x*(np.sqrt(R_mask**2-x**2) - np.sqrt(r_mask**2-x**2)), 0)
 
@@ -73,18 +73,21 @@ def experimental(x,y,fov,dr):
     rbins = np.arange(0., fov/2.0, dr)
     num_increments = len(rbins)
     g = np.zeros([len(x), num_increments-1])
-    radii = np.zeros(num_increments)
+    radii = np.zeros(num_increments-1)
     numberDensity = float(len(x))/fov**2
 
     # Compute pairwise correlation for each interior particle
     for i in range(len(x)):
-        print "Analyzing particle {} of {}".format(i, len(x))
+#    for i in range(825,826):
+        print "Analyzing particle {} of {}".format(i+1, len(x))
         d = np.sqrt((x[i]-x)**2 + (y[i]-y)**2)
         d_lower, d_upper = nearest_vals_array(np.arange(0, np.sqrt(2)*fov+dr, dr),d)
-        d[i] = fov
+        d[i] = 0
 
         # Determine normalization, if (x[i],y[i]) is near an edge
         x_e, y_e = min(x[i], fov-x[i]), min(y[i], fov-y[i]) # Find distance to edge
+
+#        print x_e, y_e
 
         x_excess = calc_excess(d_lower, d_upper, x_e)
         y_excess = calc_excess(d_lower, d_upper, y_e)
@@ -93,15 +96,13 @@ def experimental(x,y,fov,dr):
         annulus_areas = np.pi*( d_upper**2 - d_lower**2 )
         area_normalization = annulus_areas - x_excess - y_excess + xy_excess
 
-
         (result,bins) = np.histogram(d, bins=rbins, normed=False, weights=1.0/area_normalization)
         g[i,:] = result/numberDensity
 
-
     # Average g(r) for all interior particles and compute radii
-    g_average = np.zeros(num_increments)
+    g_average = np.zeros(num_increments-1)
     for i in range(num_increments-1):
-        radii[i] = (bins[i] + bins[i+1])/2.
+        radii[i] = bins[i] + dr/2.0
         g_average[i] = np.average(g[:,i])
 
     return (g_average, radii)
@@ -122,8 +123,11 @@ if __name__=="__main__":
     parser.add_argument("image_file")
     parser.add_argument("centroid_file")
     parser.add_argument("dr")
-    parser.add_argument("-s","--shift",help="Shifts centroids to account for 
-                                                removal of edge particles."
+    group=parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-s","--shift",action="store_true", help=
+                        "Shifts centroids to account for removal of edge particles.")
+    group.add_argument("-ns","--no_shift",action="store_true", help=
+                        "Does not shift centroids. Use if edge particles have not been removed.")
     args=parser.parse_args()
 
     if not os.path.exists("outputs"):
@@ -136,23 +140,24 @@ if __name__=="__main__":
     x = centroids['x']
     y = centroids['y']
     spacing_pixels = centroids['spacing']
-
+    fov_pixels = centroids['fov_pixels']
+    """
     if args.shift:
-        shift = int(ceil(spacing/2.0))
+        shift = int(np.ceil(spacing_pixels/2.0))
         x = x-shift
         y = y-shift
-
+    """
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
     fov_nm = metadata['fov']
     fov_units = metadata['fov_units']
-    fov_pixels = metadata['pixels']
+#    fov_pixels = metadata['pixels']
     pixels_per_nm = float(fov_pixels)/float(fov_nm)
-
+    """
     if args.shift:
         fov_pixels = fov_pixels - 2*shift
         fov_nm = fov_pixels / pixels_per_nm
-
+    """
     # Perform rdf calculations
     print "Done. Calculating experimental RDF."
     time_init = time.time()
