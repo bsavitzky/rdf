@@ -123,6 +123,8 @@ if __name__=="__main__":
     parser.add_argument("image_file")
     parser.add_argument("centroid_file")
     parser.add_argument("dr")
+    parser.add_argument("-s","--stretch",type=float,
+                        help="Amount to stretch lattice.  Should be >1.")
     args=parser.parse_args()
 
     if not os.path.exists("outputs"):
@@ -136,6 +138,22 @@ if __name__=="__main__":
     y = centroids['y']
     spacing_pixels = centroids['spacing']
     fov_pixels = centroids['fov_pixels']
+
+    if args.stretch:
+        print "Done. Stretching in y direction by factor of {}".format(args.stretch)
+        x_new=[]
+        y_new=[]
+        if args.stretch < 1:
+            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch))
+        y = args.stretch*y
+        for i in range(len(y)):
+            if y[i] < fov_pixels:
+                x_new.append(x[i])
+                y_new.append(y[i])
+        print "{} particles discarded".format(len(x) - len(x_new))
+        x=np.array(x_new)
+        y=np.array(y_new)
+        output_name += "_stretch={}".format(args.stretch)
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)

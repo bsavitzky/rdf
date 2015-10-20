@@ -18,7 +18,7 @@ args=parser.parse_args()
 
 if not os.path.exists("outputs"):
     os.mkdir("outputs")
-output_name="outputs/"+"rdf_exp"
+output_name="outputs/"+os.path.basename(args.rdf_file)
 
 rdf = np.load(args.rdf_file)
 r_nm = rdf['r_nm']
@@ -38,7 +38,7 @@ ax.plot(r_nm, g_exp,'k-',label=r"Experimental")
 ax.set_xlabel(r"$r$ (nm)")
 ax.set_ylabel(r"$g(r)$")
 ax.set_title("Radial Distribution Functions")
-#ax.set_ylim(0,5)
+ax.set_ylim(0,4.5)
 ax.legend()
 plt.savefig(output_name+".pdf")
 
