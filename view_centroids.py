@@ -25,6 +25,7 @@ from matplotlib.collections import PatchCollection
 parser = argparse.ArgumentParser()
 parser.add_argument("image_file")
 parser.add_argument("centroid_file")
+parser.add_argument("-pn", "--particlenumber", type=int, help="highlights the particle entered")
 args = parser.parse_args()
 
 
@@ -47,6 +48,12 @@ fig, ax = plt.subplots()
 plt.imshow(image,cmap='gray')
 if len(x) != 0:
     plt.plot(x, y, 'r.')
+if args.particlenumber:
+    print "Highlighting particle {} in blue.".format(args.particlenumber)
+    if args.particlenumber > len(x):
+        print "ERROR: There aren't that many particles!"
+    else:
+        plt.plot(x[args.particlenumber],y[args.particlenumber],'b.')
 plt.show()
 fig.canvas.draw()
 

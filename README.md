@@ -33,10 +33,13 @@ Output: .npz file with all particle centers and the average spacing.
 Script 2: view_centroids.py
 Description: Loads image and .npz centers file, and displays overlay.  Use
 to determine success of a run of centroids.py, or centroids_SP.py.
-Usage:      python view_centroids.py image_file.tif centroid_file.npz
+Optionally highlights a given particle with the -pn flag.
+Usage:  python view_centroids.py [-pn particleNumber] image_file.tif 
+centroid_file.npz
 input:  image file, as a tiff
         centers file, as .npz
 output: none
+options:    -pn #   Highlights particle number #
 
 
 Script 3: edit_centroids.ipynb
