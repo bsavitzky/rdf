@@ -18,7 +18,7 @@ args=parser.parse_args()
 
 if not os.path.exists("outputs"):
     os.mkdir("outputs")
-output_name="outputs/"+os.path.basename(args.rdf_file)
+output_name="outputs/"+os.path.splitext(os.path.basename(args.rdf_file))[0]
 
 rdf = np.load(args.rdf_file)
 r_nm = rdf['r_nm']
