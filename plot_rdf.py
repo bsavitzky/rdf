@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import argparse
 
-# Import local libraries
-import mdscrape
-
 # Enable TeX rendering (slower but prettier)
 #from matplotlib import rc
 #rc('text', usetex=True)
