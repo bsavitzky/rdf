@@ -29,6 +29,7 @@ import mdscrape as md
 parser = argparse.ArgumentParser()
 parser.add_argument("image_file")
 parser.add_argument("centroid_file")
+parser.add_argument("-p","--plot", action='store_true', help="Displays fits as they are acquired.")
 args = parser.parse_args()
 
 # Handle IO
@@ -147,7 +148,7 @@ for i in range(len(x)):
     print "Fitting particle {} of {}".format(i, len(x))
     xcurr,ycurr = x[i],y[i]
     if not on_edge(xcurr,ycurr,shift,image):
-        xSPcurr,ySPcurr, fit = xySP(xcurr,ycurr,spacing,image,plot=False)
+        xSPcurr,ySPcurr, fit = xySP(xcurr,ycurr,spacing,image,plot=args.plot)
         # Fitting may have shifted particle into edge region, so check again...
         if not on_edge(xSPcurr,ySPcurr,shift,image):
             x_SP.append(xSPcurr)
