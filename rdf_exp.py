@@ -123,7 +123,9 @@ if __name__=="__main__":
     parser.add_argument("image_file")
     parser.add_argument("centroid_file")
     parser.add_argument("dr")
-    parser.add_argument("-s","--stretch",type=float,
+    parser.add_argument("-sx","--stretch_x",type=float,
+                        help="Amount to stretch lattice.  Should be >1.")
+    parser.add_argument("-sy","--stretch_y",type=float,
                         help="Amount to stretch lattice.  Should be >1.")
     args=parser.parse_args()
 
@@ -139,21 +141,38 @@ if __name__=="__main__":
     spacing_pixels = centroids['spacing']
     fov_pixels = centroids['fov_pixels']
 
-    if args.stretch:
-        print "Done. Stretching in y direction by factor of {}".format(args.stretch)
+    if args.stretch_x:
+        print "Done. Stretching in x direction by factor of {}".format(args.stretch_x)
         x_new=[]
         y_new=[]
-        if args.stretch < 1:
-            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch))
-        y = args.stretch*y
-        for i in range(len(y)):
-            if y[i] < fov_pixels:
+        if args.stretch_x < 1:
+            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch_x))
+        x = args.stretch_x*x
+        for i in range(len(x)):
+            if x[i] < fov_pixels:
                 x_new.append(x[i])
                 y_new.append(y[i])
         print "{} particles discarded".format(len(x) - len(x_new))
         x=np.array(x_new)
         y=np.array(y_new)
-        output_name += "_stretch={}".format(args.stretch)
+        output_name += "_stretch_x={}".format(args.stretch_x)
+
+    if args.stretch_y:
+        print "Done. Stretching in x direction by factor of {}".format(args.stretch_y)
+        x_new=[]
+        y_new=[]
+        if args.stretch_y < 1:
+            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch_y))
+        y = args.stretch_y*y
+        for i in range(len(y)):
+            if y[i] < fov_pixels:
+                x_new.append(x[i])
+                y_new.append(y[i])
+        print "{} particles discarded".format(len(y) - len(y_new))
+        x=np.array(x_new)
+        y=np.array(y_new)
+        output_name += "_stretch_y={}".format(args.stretch_y)
+
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
