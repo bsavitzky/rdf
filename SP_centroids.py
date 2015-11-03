@@ -22,9 +22,6 @@ import scipy.optimize as opt
 from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 
-# Import local libraries
-import mdscrape as md
-
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("image_file")
@@ -45,9 +42,10 @@ x = centroids['x']
 y = centroids['y']
 spacing = float(centroids['spacing'])
 
-# Get metadata
-metadata = md.extract_metadata(args.image_file)
-fov_pixels = metadata['pixels']
+# Get FOV
+if np.shape(image)[0] != np.shape(image)[1]:
+    raise RuntimeError('Non square images are not supported at this time.')
+fov_pixels = np.shape(image)[0]
 
 # Check if a particle is on the edge of the image (within 1/2 SL spacing)
 def on_edge(x0,y0,rad,image):
