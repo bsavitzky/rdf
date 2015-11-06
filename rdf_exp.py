@@ -113,7 +113,7 @@ if __name__=="__main__":
     # Import global libraries
     import argparse
     import os
-    import skimage
+    import skimage.io
     import time
     # Import local libraries
     import mdscrape as md
