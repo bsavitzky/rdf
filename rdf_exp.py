@@ -109,30 +109,41 @@ def experimental(x,y,fov,dr):
 
 
 if __name__=="__main__":
+
     # Import global libraries
     import argparse
     import os
-    import skimage.io
+    import skimage
     import time
-
     # Import local libraries
     import mdscrape as md
-
+    
     # Get input data, deal with I/O
     parser=argparse.ArgumentParser()
     parser.add_argument("image_file")
     parser.add_argument("centroid_file")
-    parser.add_argument("dr")
+    parser.add_argument("--dr", type=float, default=0.1, help="Bin size for rdf")
+    parser.add_argument("-o","--output",type=str, default="outputs/", help="Directory for output files")
     parser.add_argument("-sx","--stretch_x",type=float,
                         help="Amount to stretch lattice.  Should be >1.")
     parser.add_argument("-sy","--stretch_y",type=float,
                         help="Amount to stretch lattice.  Should be >1.")
     args=parser.parse_args()
 
-    if not os.path.exists("outputs"):
-        os.mkdir("outputs")
-    output_name="outputs/"+"rdf_exp"
+    # Make output path with appropriate metadata
+    if not os.path.exists(args.output):
+        os.mkdir(args.output)
+    if args.output[-1]!="/":
+        output_name = args.output+"/"
+    else:
+        output_name = args.output
+    output_name+="rdf_exp"
+    if args.stretch_x:
+        output_name += "_stretch_x={}".format(args.stretch_x)
+    if args.stretch_y:
+        output_name += "_stretch_y={}".format(args.stretch_y)
 
+    # Read data from file
     print "Loading image and centers..."
     image = skimage.io.imread(args.image_file)
     centroids = np.load(args.centroid_file)
@@ -141,6 +152,7 @@ if __name__=="__main__":
     spacing_pixels = centroids['spacing']
     fov_pixels = centroids['fov_pixels']
 
+    # Perform any stretches
     if args.stretch_x:
         print "Done. Stretching in x direction by factor of {}".format(args.stretch_x)
         x_new=[]
@@ -155,7 +167,6 @@ if __name__=="__main__":
         print "{} particles discarded".format(len(x) - len(x_new))
         x=np.array(x_new)
         y=np.array(y_new)
-        output_name += "_stretch_x={}".format(args.stretch_x)
 
     if args.stretch_y:
         print "Done. Stretching in x direction by factor of {}".format(args.stretch_y)
@@ -171,14 +182,12 @@ if __name__=="__main__":
         print "{} particles discarded".format(len(y) - len(y_new))
         x=np.array(x_new)
         y=np.array(y_new)
-        output_name += "_stretch_y={}".format(args.stretch_y)
 
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
     fov_nm = metadata['fov']
     fov_units = metadata['fov_units']
-#    fov_pixels = metadata['pixels']
     pixels_per_nm = float(fov_pixels)/float(fov_nm)
 
     # Perform rdf calculations
@@ -190,4 +199,3 @@ if __name__=="__main__":
     print "Done. Calculation took {} seconds.".format(time.time()-time_init)
     print "Saving as {}.npz".format(output_name)
     np.savez(output_name, r_nm=r_nm, g_exp=g_exp)
-
