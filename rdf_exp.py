@@ -143,10 +143,8 @@ if __name__=="__main__":
     parser.add_argument("centroid_file")
     parser.add_argument("--dr", type=float, default=0.1, help="Bin size for rdf")
     parser.add_argument("-o","--output",type=str, default="outputs/", help="Directory for output files")
-    parser.add_argument("-sx","--stretch_x",type=float,
-                        help="Amount to stretch lattice.  Should be >1.")
-    parser.add_argument("-sy","--stretch_y",type=float,
-                        help="Amount to stretch lattice.  Should be >1.")
+    parser.add_argument("-s","--stretch",type=float, nargs=2,
+                        help="Amount to stretch lattice (>=1), and angle of stretch from x-axis, in degrees.")
     args=parser.parse_args()
 
     # Make output path with appropriate metadata
@@ -157,10 +155,8 @@ if __name__=="__main__":
     else:
         output_name = args.output
     output_name+="rdf_exp"
-    if args.stretch_x:
-        output_name += "_stretch_x={}".format(args.stretch_x)
-    if args.stretch_y:
-        output_name += "_stretch_y={}".format(args.stretch_y)
+    if args.stretch:
+       output_name += "_stretch={}_stretchangle={}".format(args.stretch[0], args.stretch[1])
 
     # Read data from file
     print "Loading image and centers..."
@@ -172,8 +168,10 @@ if __name__=="__main__":
     fov_pixels = centroids['fov_pixels']
 
     # Perform any stretches
-    if args.stretch_x or args.stretch_y:
-        x, y = stretch_lattice(x, y, fov_pixels, args.stretch_x, args.stretch_y)
+    if args.stretch:
+        stretch_x = np.abs((args.stretch[0]-1)*np.cos(np.radians(args.stretch[1]))) + 1
+        stretch_y = np.abs((args.stretch[0]-1)*np.sin(np.radians(args.stretch[1]))) + 1
+        x, y = stretch_lattice(x, y, fov_pixels, stretch_x, stretch_y)
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
