@@ -117,8 +117,8 @@ def stretch_lattice(x, y, fov, stretch_x, stretch_y):
     y_new=[]
     if stretch_x < 1 or stretch_y < 1:
         raise RunTimeError("Error. Stretch values must be >1.  {}, {} entered.".format(stretch_x, stretch_y))
-    x = stretch_x*x
-    y = stretch_y*y
+    x = (x - fov/2.0)*stretch_x + fov/2.0
+    y = (y - fov/2.0)*stretch_y + fov/2.0
     for i in range(len(x)):
         if x[i] < fov and x[i] >= 0 and y[i] < fov and y[i] >= 0:
             x_new.append(x[i])
