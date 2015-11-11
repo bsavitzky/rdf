@@ -107,6 +107,25 @@ def experimental(x,y,fov,dr):
 
     return (g_average, radii)
 
+def stretch_lattice(x, y, fov, stretch_x, stretch_y):
+    if stretch_x == None:
+        stretch_x = 1
+    if stretch_y == None:
+        stretch_y =1
+    print "Stretching x direction by factor of {}, and y direction by factor of {}".format(stretch_x, stretch_y)
+    x_new=[]
+    y_new=[]
+    if stretch_x < 1 or stretch_y < 1:
+        raise RunTimeError("Error. Stretch values must be >1.  {}, {} entered.".format(stretch_x, stretch_y))
+    x = stretch_x*x
+    y = stretch_y*y
+    for i in range(len(x)):
+        if x[i] < fov and x[i] >= 0 and y[i] < fov and y[i] >= 0:
+            x_new.append(x[i])
+            y_new.append(y[i])
+    print "{} particles discarded".format(len(x) - len(x_new))
+    return np.array(x_new), np.array(y_new)
+
 
 if __name__=="__main__":
 
@@ -153,36 +172,8 @@ if __name__=="__main__":
     fov_pixels = centroids['fov_pixels']
 
     # Perform any stretches
-    if args.stretch_x:
-        print "Done. Stretching in x direction by factor of {}".format(args.stretch_x)
-        x_new=[]
-        y_new=[]
-        if args.stretch_x < 1:
-            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch_x))
-        x = args.stretch_x*x
-        for i in range(len(x)):
-            if x[i] < fov_pixels:
-                x_new.append(x[i])
-                y_new.append(y[i])
-        print "{} particles discarded".format(len(x) - len(x_new))
-        x=np.array(x_new)
-        y=np.array(y_new)
-
-    if args.stretch_y:
-        print "Done. Stretching in x direction by factor of {}".format(args.stretch_y)
-        x_new=[]
-        y_new=[]
-        if args.stretch_y < 1:
-            raise RunTimeError("Error. Stretch value must be >1.  {} entered.".format(args.stretch_y))
-        y = args.stretch_y*y
-        for i in range(len(y)):
-            if y[i] < fov_pixels:
-                x_new.append(x[i])
-                y_new.append(y[i])
-        print "{} particles discarded".format(len(y) - len(y_new))
-        x=np.array(x_new)
-        y=np.array(y_new)
-
+    if args.stretch_x or args.stretch_y:
+        x, y = stretch_lattice(x, y, fov_pixels, args.stretch_x, args.stretch_y)
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
