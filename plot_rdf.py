@@ -15,7 +15,7 @@ parser.add_argument("-o","--output",default="outputs/",help="Directory for outpu
 args=parser.parse_args()
 
 if not os.path.exists(args.output):
-    os.mkdir(args.output)
+    os.makedirs(args.output)
 if args.output[-1]!="/":
     output_name=args.output+"/"
 else:

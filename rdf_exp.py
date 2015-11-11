@@ -149,7 +149,7 @@ if __name__=="__main__":
 
     # Make output path with appropriate metadata
     if not os.path.exists(args.output):
-        os.mkdir(args.output)
+        os.makedirs(args.output)
     if args.output[-1]!="/":
         output_name = args.output+"/"
     else:
