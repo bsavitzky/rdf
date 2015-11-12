@@ -107,25 +107,25 @@ def experimental(x,y,fov,dr):
 
     return (g_average, radii)
 
-def stretch_lattice(x, y, fov, stretch_x, stretch_y):
-    if stretch_x == None:
-        stretch_x = 1
-    if stretch_y == None:
-        stretch_y =1
-    print "Stretching x direction by factor of {}, and y direction by factor of {}".format(stretch_x, stretch_y)
+def stretch_lattice(x, y, fov, stretch, angle):
+    if stretch < 1:
+        raise RunTimeError("Error. Stretch values must be >1.  {} entered.".format(stretch))
+    print "Stretching by a factor of {} at an angle of {} degrees to the x-axis about the image center".format(stretch, angle)
     x_new=[]
     y_new=[]
-    if stretch_x < 1 or stretch_y < 1:
-        raise RunTimeError("Error. Stretch values must be >1.  {}, {} entered.".format(stretch_x, stretch_y))
-    x = (x - fov/2.0)*stretch_x + fov/2.0
-    y = (y - fov/2.0)*stretch_y + fov/2.0
+    x_shifted, y_shifted = x-fov/2.0, y-fov/2.0
+    x = ( x_shifted + np.sqrt(x_shifted**2+y_shifted**2) * 
+          np.abs(np.cos(np.arctan(y_shifted/x_shifted)-np.radians(angle))) *
+          np.cos(np.radians(angle))*(stretch-1) + fov/2.0 )
+    y = ( y_shifted + np.sqrt(x_shifted**2+y_shifted**2) * 
+          np.abs(np.cos(np.arctan(y_shifted/x_shifted)-np.radians(angle))) *
+          np.sin(np.radians(angle))*(stretch-1) + fov/2.0 )
     for i in range(len(x)):
         if x[i] < fov and x[i] >= 0 and y[i] < fov and y[i] >= 0:
             x_new.append(x[i])
             y_new.append(y[i])
     print "{} particles discarded".format(len(x) - len(x_new))
     return np.array(x_new), np.array(y_new)
-
 
 if __name__=="__main__":
 
@@ -169,9 +169,7 @@ if __name__=="__main__":
 
     # Perform any stretches
     if args.stretch:
-        stretch_x = np.abs((args.stretch[0]-1)*np.cos(np.radians(args.stretch[1]))) + 1
-        stretch_y = np.abs((args.stretch[0]-1)*np.sin(np.radians(args.stretch[1]))) + 1
-        x, y = stretch_lattice(x, y, fov_pixels, stretch_x, stretch_y)
+        x, y = stretch_lattice(x, y, fov_pixels, args.stretch[0], args.stretch[1])
 
     print "Done. Loaded {} centroids.\nExtracting metadata...".format(len(x))
     metadata = md.extract_metadata(args.image_file)
