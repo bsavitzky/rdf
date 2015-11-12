@@ -115,11 +115,11 @@ def stretch_lattice(x, y, fov, stretch, angle):
     y_new=[]
     x_shifted, y_shifted = x-fov/2.0, y-fov/2.0
     x = ( x_shifted + np.sqrt(x_shifted**2+y_shifted**2) * 
-          np.abs(np.cos(np.arctan(y_shifted/x_shifted)-np.radians(angle))) *
+          np.cos(np.angle(x_shifted+y_shifted*1j)-np.radians(angle)) *
           np.cos(np.radians(angle))*(stretch-1) + fov/2.0 )
     y = ( y_shifted + np.sqrt(x_shifted**2+y_shifted**2) * 
-          np.abs(np.cos(np.arctan(y_shifted/x_shifted)-np.radians(angle))) *
-          np.sin(np.radians(angle))*(stretch-1) + fov/2.0 )
+          np.cos(np.angle(x_shifted+y_shifted*1j)-np.radians(angle)) *
+          np.sin(np.radians(angle))*(stretch-1)  + fov/2.0 )
     for i in range(len(x)):
         if x[i] < fov and x[i] >= 0 and y[i] < fov and y[i] >= 0:
             x_new.append(x[i])
